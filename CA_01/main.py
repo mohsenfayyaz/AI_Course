@@ -15,7 +15,7 @@ def main():
 
     my_bfs = BFS(characterized_map)
     my_bfs.start()
-    my_bfs.print_solution()
+    my_bfs.print_solution(delay=0.2)
 
     end = time()
     print("Time: " + str(end - start) + "s")

@@ -2,7 +2,6 @@ from State import State
 from queue import Queue
 from time import sleep
 import copy
-
 from Pac_map_handler import Pac_map_handler
 
 P_CHAR = "P"
@@ -14,7 +13,7 @@ Q_FOOD = "2"
 BOTH_FOOD = "3"
 
 
-class BFS:
+class IDS:
     def __init__(self, pac_map):
         self.start_state = State(pac_map, None)
         self.explored_states_hash = set()

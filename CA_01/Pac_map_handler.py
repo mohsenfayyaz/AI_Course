@@ -1,3 +1,7 @@
+from os import system, name
+import sys
+from IPython.display import clear_output
+
 P_CHAR = "P"
 Q_CHAR = "Q"
 WALL_CHAR = "%"
@@ -86,4 +90,17 @@ class Pac_map_handler:
 
     @staticmethod
     def print_map(pac_map):
+        cls()
         print('\n'.join(''.join(item) for item in pac_map))
+
+
+def cls():
+    # for windows
+    if name == 'nt':
+        _ = system('cls')
+
+        # for mac and linux(here, os.name is 'posix')
+    else:
+        _ = system('clear')
+
+    clear_output(wait=True)
