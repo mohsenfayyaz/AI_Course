@@ -16,37 +16,129 @@ BOTH_FOOD = "3"
 class IDS:
     def __init__(self, pac_map):
         self.start_state = State(pac_map, None)
-        self.explored_states_hash = set()
+
+        self.all_explored_states_hash = set()
+        self.all_explored_states_hash_best_depth = dict()
+
+        self.one_DFS_explored_states_hash = set()
+        self.one_DFS_explored_states_hash_best_depth = dict()
+
         self.unique_states_hash = set()
         self.num_of_explored_states = 0
         self.num_of_unique_explored_states = 0
-        self.frontier_states = Queue()
         self.goal_state = None
         self.goal_state_is_found = False
 
-    def start(self):
+        self.hash_maps_to_food_number = dict()
+
+    def init_attributes(self):
         self.goal_state_is_found = False
-        self.frontier_states = Queue()
-        self.frontier_states.put(self.start_state)
-        self.explored_states_hash = set()
-        self.explored_states_hash.add(self.start_state.get_hash())
+        self.one_DFS_explored_states_hash = set()
+        self.one_DFS_explored_states_hash_best_depth = dict()
+        # self.unique_states_hash = set()
+        # self.num_of_explored_states = 0
+        # self.num_of_unique_explored_states = 0
+
+    def count_explored_state(self, state):
+        self.num_of_explored_states += 1;
+        if state.get_hash() not in self.unique_states_hash:
+            self.unique_states_hash.add(state.get_hash())
+            self.num_of_unique_explored_states += 1
+
+    def DFS(self, state, max_depth, current_depth=0, explored=list()):
+        self.count_explored_state(state)
+
+        if current_depth >= max_depth:
+            return False
+
+        if self.are_constraints_satisfied(state):
+            self.goal_state_is_found = True
+            self.goal_state = state
+            return True
+
+        if state.get_hash() in explored:
+            return False
+
+        # CAN'T GO TO AN EXPLORED STATE IN THIS DFS LEVEL UNLESS WITH SMALLER DEPTH
+        if state.get_hash() in self.one_DFS_explored_states_hash and \
+                current_depth >= self.one_DFS_explored_states_hash_best_depth[state.get_hash()]:
+            return False
+
+        # CAN'T GO TO AN EXPLORED STATE IN ALL DFS LEVELS UNLESS WITH SMALLER OR EQUAL DEPTH
+        if state.get_hash() in self.all_explored_states_hash and \
+                current_depth > self.all_explored_states_hash_best_depth[state.get_hash()]:
+            return False
+
+        self.all_explored_states_hash.add(state.get_hash())
+        self.all_explored_states_hash_best_depth[state.get_hash()] = current_depth
+        self.one_DFS_explored_states_hash.add(state.get_hash())
+        self.one_DFS_explored_states_hash_best_depth[state.get_hash()] = current_depth
+
+        explored.append(state.get_hash())
+
+        pac_map = state.get_map()
+        p_row, p_col = Pac_map_handler.find_in_map(pac_map, P_CHAR)
+        q_row, q_col = Pac_map_handler.find_in_map(pac_map, Q_CHAR)
+
+        # P -------
+        new_map = Pac_map_handler.move_p_left(copy.deepcopy(pac_map), p_row, p_col)
+        new_state = State(new_map, state)
+        if self.DFS(new_state, max_depth, current_depth + 1):
+            return True
+
+        new_map = Pac_map_handler.move_p_down(copy.deepcopy(pac_map), p_row, p_col)
+        new_state = State(new_map, state)
+        if self.DFS(new_state, max_depth, current_depth + 1):
+            return True
+
+        new_map = Pac_map_handler.move_p_up(copy.deepcopy(pac_map), p_row, p_col)
+        new_state = State(new_map, state)
+        if self.DFS(new_state, max_depth, current_depth + 1):
+            return True
+
+        new_map = Pac_map_handler.move_p_right(copy.deepcopy(pac_map), p_row, p_col)
+        new_state = State(new_map, state)
+        if self.DFS(new_state, max_depth, current_depth + 1):
+            return True
+
+        # Q -------------
+        new_map = Pac_map_handler.move_q_left(copy.deepcopy(pac_map), q_row, q_col)
+        new_state = State(new_map, state)
+        if self.DFS(new_state, max_depth, current_depth + 1):
+            return True
+
+        new_map = Pac_map_handler.move_q_right(copy.deepcopy(pac_map), q_row, q_col)
+        new_state = State(new_map, state)
+        if self.DFS(new_state, max_depth, current_depth + 1):
+            return True
+
+        new_map = Pac_map_handler.move_q_up(copy.deepcopy(pac_map), q_row, q_col)
+        new_state = State(new_map, state)
+        if self.DFS(new_state, max_depth, current_depth + 1):
+            return True
+
+        new_map = Pac_map_handler.move_q_down(copy.deepcopy(pac_map), q_row, q_col)
+        new_state = State(new_map, state)
+        if self.DFS(new_state, max_depth, current_depth + 1):
+            return True
+
+        explored.pop()
+        return False
+
+    def start(self):
+        ids_max_depth = 0
+        self.all_explored_states_hash = set()
+        self.all_explored_states_hash_best_depth = dict()
         self.unique_states_hash = set()
         self.num_of_explored_states = 0
         self.num_of_unique_explored_states = 0
-        while not self.frontier_states.empty():
-            current_state = self.frontier_states.get()
-            self.num_of_explored_states += 1
-            if current_state.get_hash() not in self.unique_states_hash:
-                self.unique_states_hash.add(current_state.get_hash())
-                self.num_of_unique_explored_states += 1
+        print("Current IDS Depth:", end=" ");
+        while True:
+            ids_max_depth += 1
+            print(ids_max_depth, end=" ->\n ")
+            self.init_attributes()
 
-            # self.print_map(current_state.get_map())
-            if self.are_constraints_satisfied(current_state):
-                self.goal_state = current_state
-                self.goal_state_is_found = True
-                return True
-
-            self.do_actions(current_state)
+            self.DFS(self.start_state, ids_max_depth)
             if self.goal_state_is_found:
                 return True
 
@@ -57,10 +149,8 @@ class IDS:
             print("No Solution!")
         else:
             current_state = self.goal_state
-            goal_depth = 0
             states_list = list()
             while current_state is not None:
-                goal_depth += 1
                 states_list.append(current_state)
                 current_state = current_state.get_parent()
 
@@ -70,54 +160,10 @@ class IDS:
 
             print("Explored States: " + str(self.num_of_explored_states))
             print("Explored Unique States: " + str(self.num_of_unique_explored_states))
-            print("Goal Depth: " + str(goal_depth))
+            print("Goal Depth: " + str(len(states_list)))
 
     def are_constraints_satisfied(self, state: State):
-        for line in state.get_map():
+        for line in state.get_hash():
             if P_FOOD in line or Q_FOOD in line or BOTH_FOOD in line:
                 return False
         return True
-
-    def do_actions(self, current_state):
-        pac_map = current_state.get_map()
-        p_row, p_col = Pac_map_handler.find_in_map(pac_map, P_CHAR)
-        q_row, q_col = Pac_map_handler.find_in_map(pac_map, Q_CHAR)
-        # P MOVEMENT
-        self.move_p(current_state, pac_map, p_row, p_col)
-        # Q MOVEMENT
-        self.move_q(current_state, pac_map, q_row, q_col)
-
-    def move_p(self, current_state, pac_map, row, col):
-        new_map = Pac_map_handler.move_p_up(copy.deepcopy(pac_map), row, col)
-        self.add_to_frontier(new_map, current_state)
-
-        new_map = Pac_map_handler.move_p_left(copy.deepcopy(pac_map), row, col)
-        self.add_to_frontier(new_map, current_state)
-
-        new_map = Pac_map_handler.move_p_down(copy.deepcopy(pac_map), row, col)
-        self.add_to_frontier(new_map, current_state)
-
-        new_map = Pac_map_handler.move_p_right(copy.deepcopy(pac_map), row, col)
-        self.add_to_frontier(new_map, current_state)
-
-    def move_q(self, current_state, pac_map, row, col):
-        new_map = Pac_map_handler.move_q_up(copy.deepcopy(pac_map), row, col)
-        self.add_to_frontier(new_map, current_state)
-
-        new_map = Pac_map_handler.move_q_left(copy.deepcopy(pac_map), row, col)
-        self.add_to_frontier(new_map, current_state)
-
-        new_map = Pac_map_handler.move_q_down(copy.deepcopy(pac_map), row, col)
-        self.add_to_frontier(new_map, current_state)
-
-        new_map = Pac_map_handler.move_q_right(copy.deepcopy(pac_map), row, col)
-        self.add_to_frontier(new_map, current_state)
-
-    def add_to_frontier(self, new_map, current_state):
-        new_state = State(new_map, current_state)
-        if not new_state.get_hash() in self.explored_states_hash:
-            self.frontier_states.put(new_state)
-            self.explored_states_hash.add(new_state.get_hash())
-            if self.are_constraints_satisfied(new_state):
-                self.goal_state = new_state
-                self.goal_state_is_found = True

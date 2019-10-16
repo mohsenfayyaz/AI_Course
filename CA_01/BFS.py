@@ -58,10 +58,8 @@ class BFS:
             print("No Solution!")
         else:
             current_state = self.goal_state
-            goal_depth = 0
             states_list = list()
             while current_state is not None:
-                goal_depth += 1
                 states_list.append(current_state)
                 current_state = current_state.get_parent()
 
@@ -71,7 +69,7 @@ class BFS:
 
             print("Explored States: " + str(self.num_of_explored_states))
             print("Explored Unique States: " + str(self.num_of_unique_explored_states))
-            print("Goal Depth: " + str(goal_depth))
+            print("Goal Depth: " + str(len(states_list)))
 
     def are_constraints_satisfied(self, state: State):
         for line in state.get_map():
