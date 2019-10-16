@@ -59,20 +59,24 @@ class IDS:
         if state.get_hash() in explored:
             return False
 
-        # CAN'T GO TO AN EXPLORED STATE IN THIS DFS LEVEL UNLESS WITH SMALLER DEPTH
-        if state.get_hash() in self.one_DFS_explored_states_hash and \
-                current_depth >= self.one_DFS_explored_states_hash_best_depth[state.get_hash()]:
-            return False
+        # < COMMENT FOR MEMORY OF the neighbors of a single path through the search tree
 
-        # CAN'T GO TO AN EXPLORED STATE IN ALL DFS LEVELS UNLESS WITH SMALLER OR EQUAL DEPTH
-        if state.get_hash() in self.all_explored_states_hash and \
-                current_depth > self.all_explored_states_hash_best_depth[state.get_hash()]:
-            return False
+        # # CAN'T GO TO AN EXPLORED STATE IN THIS DFS LEVEL UNLESS WITH SMALLER DEPTH
+        # if state.get_hash() in self.one_DFS_explored_states_hash and \
+        #         current_depth >= self.one_DFS_explored_states_hash_best_depth[state.get_hash()]:
+        #     return False
+        #
+        # # CAN'T GO TO AN EXPLORED STATE IN ALL DFS LEVELS UNLESS WITH SMALLER OR EQUAL DEPTH
+        # if state.get_hash() in self.all_explored_states_hash and \
+        #         current_depth > self.all_explored_states_hash_best_depth[state.get_hash()]:
+        #     return False
+        #
+        # self.all_explored_states_hash.add(state.get_hash())
+        # self.all_explored_states_hash_best_depth[state.get_hash()] = current_depth
+        # self.one_DFS_explored_states_hash.add(state.get_hash())
+        # self.one_DFS_explored_states_hash_best_depth[state.get_hash()] = current_depth
 
-        self.all_explored_states_hash.add(state.get_hash())
-        self.all_explored_states_hash_best_depth[state.get_hash()] = current_depth
-        self.one_DFS_explored_states_hash.add(state.get_hash())
-        self.one_DFS_explored_states_hash_best_depth[state.get_hash()] = current_depth
+        # COMMENT FOR MEMORY OF the neighbors of a single path through the search tree />
 
         explored.append(state.get_hash())
 
