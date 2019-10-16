@@ -4,6 +4,7 @@ from time import sleep
 import copy
 from os import system, name
 import sys
+from IPython.display import clear_output
 
 from Pac_map_handler import Pac_map_handler
 
@@ -20,23 +21,29 @@ class BFS:
     def __init__(self, pac_map):
         self.start_state = State(pac_map, None)
         self.explored_states_hash = set()
+        self.unique_states_hash = set()
+        self.num_of_explored_states = 0
+        self.num_of_unique_explored_states = 0
         self.frontier_states = Queue()
         self.goal_state = None
         self.goal_state_is_found = False
-        self.num_of_explored_states = 0
-        self.num_of_unique_explored_states = 0
 
     def start(self):
         self.goal_state_is_found = False
         self.frontier_states = Queue()
         self.frontier_states.put(self.start_state)
         self.explored_states_hash = set()
+        self.explored_states_hash.add(self.start_state.get_hash())
+        self.unique_states_hash = set()
         self.num_of_explored_states = 0
+        self.num_of_unique_explored_states = 0
         while not self.frontier_states.empty():
             current_state = self.frontier_states.get()
             self.num_of_explored_states += 1
-            if current_state.get_hash() not in self.explored_states_hash:
+            if current_state.get_hash() not in self.unique_states_hash:
+                self.unique_states_hash.add(current_state.get_hash())
                 self.num_of_unique_explored_states += 1
+
             # self.print_map(current_state.get_map())
             if self.are_constraints_satisfied(current_state):
                 self.goal_state = current_state
@@ -55,12 +62,17 @@ class BFS:
         else:
             current_state = self.goal_state
             goal_depth = 0
+            states_list = list()
             while current_state is not None:
                 goal_depth += 1
-                cls()
-                Pac_map_handler.print_map(current_state.get_map())
+                states_list.append(current_state)
                 current_state = current_state.get_parent()
+
+            for state in reversed(states_list):
+                cls()
+                Pac_map_handler.print_map(state.get_map())
                 sleep(0.2)
+
             print("Explored States: " + str(self.num_of_explored_states))
             print("Explored Unique States: " + str(self.num_of_unique_explored_states))
             print("Goal Depth: " + str(goal_depth))
@@ -125,4 +137,4 @@ def cls():
     else:
         _ = system('clear')
 
-    sys.stdout.write("\r     \r")
+    clear_output(wait=True)

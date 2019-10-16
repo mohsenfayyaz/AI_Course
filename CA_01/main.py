@@ -10,6 +10,7 @@ def main():
     for line in pac_map:
         characterized_map.append(list(line))
 
+    print("Loading...")
     start = time()
 
     my_bfs = BFS(characterized_map)
