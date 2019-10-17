@@ -36,9 +36,14 @@ class A_star:
 
     def h(self, state):
         pac_map = state.get_map()
-        p_row, p_col = Pac_map_handler.find_in_map(pac_map, P_CHAR)
-        q_row, q_col = Pac_map_handler.find_in_map(pac_map, Q_CHAR)
-        return 0
+        p_nearest_1_distance = Pac_map_handler.nearest_distance(pac_map, P_CHAR, P_FOOD)
+        q_nearest_2_distance = Pac_map_handler.nearest_distance(pac_map, Q_CHAR, Q_FOOD)
+        p_nearest_3_distance = Pac_map_handler.nearest_distance(pac_map, P_CHAR, BOTH_FOOD)
+        q_nearest_3_distance = Pac_map_handler.nearest_distance(pac_map, Q_CHAR, BOTH_FOOD)
+        if p_nearest_1_distance + q_nearest_2_distance == 0:
+            return min(p_nearest_3_distance, q_nearest_3_distance)
+        else:
+            return p_nearest_1_distance + q_nearest_2_distance
 
     def count_explored_state(self, state):
         self.num_of_explored_states += 1;
@@ -51,7 +56,7 @@ class A_star:
         self.frontier_states_queue = PriorityQueue()
         self.frontier_states_queue.push(self.start_state, self.f(self.start_state))
         self.explored_states_hash = set()
-        self.explored_states_hash.add(self.start_state.get_hash())
+        self.explored_states_hash_best_depth = dict()
         self.unique_states_hash = set()
         self.num_of_explored_states = 0
         self.num_of_unique_explored_states = 0
@@ -60,7 +65,14 @@ class A_star:
             current_state = self.frontier_states_queue.pop()
             self.count_explored_state(current_state)
 
-            # self.print_map(current_state.get_map())
+            if current_state.get_hash() in self.explored_states_hash and\
+                    current_state.depth >= self.explored_states_hash_best_depth[current_state.get_hash()]:
+                continue
+            else:
+                self.explored_states_hash.add(current_state.get_hash())
+                self.explored_states_hash_best_depth[current_state.get_hash()] = current_state.depth
+
+            # Pac_map_handler.print_map(current_state.get_map())
             if self.are_constraints_satisfied(current_state):
                 self.goal_state = current_state
                 self.goal_state_is_found = True

@@ -93,6 +93,32 @@ class Pac_map_handler:
         cls()
         print('\n'.join(''.join(item) for item in pac_map))
 
+    @staticmethod
+    def nearest_distance(pac_map, start_char, final_char):
+        row, col = Pac_map_handler.find_in_map(pac_map, start_char)
+        return Pac_map_handler.nearest_char_distance(pac_map, row, col, final_char)
+
+    @staticmethod
+    def nearest_char_distance(pac_map, row, col, char):
+        char_list = list()
+        for line in pac_map:
+            if char in line:
+                char_list.append([pac_map.index(line), line.index(char)])
+
+        if len(char_list) > 0:
+            min_distance = Pac_map_handler.distance(row, col, char_list[0][0], char_list[0][1])
+        else:
+            return 0
+        for found_char in char_list:
+            distance = Pac_map_handler.distance(row, col, found_char[0], found_char[1])
+            if distance < min_distance:
+                min_distance = distance
+
+        return min_distance
+
+    @staticmethod
+    def distance(row_1, col_1, row_2, col_2):
+        return abs(row_1-row_2) + abs(col_1 - col_2)
 
 def cls():
     # for windows
