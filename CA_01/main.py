@@ -7,7 +7,7 @@ from PriorityQueue import PriorityQueue
 
 
 def main():
-    with open('test3', 'r') as file:
+    with open('test1', 'r') as file:
         pac_map = file.read().splitlines()
 
     characterized_map = list()
@@ -27,9 +27,10 @@ def main():
 
     my_a = A_star(characterized_map)
     my_a.start()
+    end = time()
     my_a.print_solution(delay=0.1)
 
-    end = time()
+
     print("Time: " + str(end - start) + "s")
 
 

@@ -46,7 +46,7 @@ class A_star:
             return p_nearest_1_distance + q_nearest_2_distance
 
     def count_explored_state(self, state):
-        self.num_of_explored_states += 1;
+        self.num_of_explored_states += 1
         if state.get_hash() not in self.unique_states_hash:
             self.unique_states_hash.add(state.get_hash())
             self.num_of_unique_explored_states += 1
@@ -65,8 +65,7 @@ class A_star:
             current_state = self.frontier_states_queue.pop()
             self.count_explored_state(current_state)
 
-            if current_state.get_hash() in self.explored_states_hash and\
-                    current_state.depth >= self.explored_states_hash_best_depth[current_state.get_hash()]:
+            if current_state.get_hash() in self.explored_states_hash:
                 continue
             else:
                 self.explored_states_hash.add(current_state.get_hash())
