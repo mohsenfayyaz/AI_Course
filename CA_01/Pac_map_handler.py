@@ -120,6 +120,16 @@ class Pac_map_handler:
     def distance(row_1, col_1, row_2, col_2):
         return abs(row_1-row_2) + abs(col_1 - col_2)
 
+    @staticmethod
+    def count_foods(pac_map):
+        food_counter = 0
+        for line in pac_map:
+            for char in line:
+                if char in [P_FOOD, Q_FOOD, BOTH_FOOD]:
+                    food_counter += 1
+
+        return food_counter
+
 def cls():
     # for windows
     if name == 'nt':

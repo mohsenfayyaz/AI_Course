@@ -14,6 +14,7 @@ P_FOOD = "1"
 Q_FOOD = "2"
 BOTH_FOOD = "3"
 
+USE_GOOD_HEURISTIC = False
 
 class A_star:
     def __init__(self, pac_map):
@@ -35,15 +36,19 @@ class A_star:
         return state.depth
 
     def h(self, state):
-        pac_map = state.get_map()
-        p_nearest_1_distance = Pac_map_handler.nearest_distance(pac_map, P_CHAR, P_FOOD)
-        q_nearest_2_distance = Pac_map_handler.nearest_distance(pac_map, Q_CHAR, Q_FOOD)
-        p_nearest_3_distance = Pac_map_handler.nearest_distance(pac_map, P_CHAR, BOTH_FOOD)
-        q_nearest_3_distance = Pac_map_handler.nearest_distance(pac_map, Q_CHAR, BOTH_FOOD)
-        if p_nearest_1_distance + q_nearest_2_distance == 0:
-            return min(p_nearest_3_distance, q_nearest_3_distance)
+        if USE_GOOD_HEURISTIC:
+            pac_map = state.get_map()
+            p_nearest_1_distance = Pac_map_handler.nearest_distance(pac_map, P_CHAR, P_FOOD)
+            q_nearest_2_distance = Pac_map_handler.nearest_distance(pac_map, Q_CHAR, Q_FOOD)
+            p_nearest_3_distance = Pac_map_handler.nearest_distance(pac_map, P_CHAR, BOTH_FOOD)
+            q_nearest_3_distance = Pac_map_handler.nearest_distance(pac_map, Q_CHAR, BOTH_FOOD)
+            if p_nearest_1_distance + q_nearest_2_distance == 0:
+                return min(p_nearest_3_distance, q_nearest_3_distance)
+            else:
+                return p_nearest_1_distance + q_nearest_2_distance
         else:
-            return p_nearest_1_distance + q_nearest_2_distance
+            return Pac_map_handler.count_foods(state.get_map())
+
 
     def count_explored_state(self, state):
         self.num_of_explored_states += 1
