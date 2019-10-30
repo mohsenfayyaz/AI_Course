@@ -38,7 +38,7 @@ class Game:
         return result
 
     def valid(self, row, col):
-        return row >= 0 and col >= 0 and row < self.size and col < self.size
+        return 0 <= row < self.size and 0 <= col < self.size
 
     def contains(self, board, row, col, symbol):
         return self.valid(row, col) and board[row][col] == symbol
@@ -102,7 +102,7 @@ class Game:
         moves.append([0] * 4)
         moves.append([self.size - 1] * 4)
         moves.append([self.half_the_size] * 4)
-        moves.append([(self.half_the_size) - 1] * 4)
+        moves.append([self.half_the_size - 1] * 4)
         return moves
 
     def generateSecondMoves(self, board):
@@ -287,10 +287,10 @@ class HumanPlayer(Game, Player):
                 print("Invalid choice, try again.")
 
 
-if __name__ == '__main__':
-    game = Game(8)
-    human1 = HumanPlayer(8)
-    human1.initialize('B')
-    human2 = HumanPlayer(8)
-    human2.initialize('W')
-    game.playOneGame(human1, human2, True)
+# if __name__ == '__main__':
+#     game = Game(8)
+#     human1 = HumanPlayer(8)
+#     human1.initialize('B')
+#     human2 = HumanPlayer(8)
+#     human2.initialize('W')
+#     game.playOneGame(human1, human2, True)
