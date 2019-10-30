@@ -11,8 +11,8 @@ SIDE_SELF = "SELF"
 SIDE_OPPONENT = "OPPONENT"
 
 
-class MinimaxPlayer(Game, Player):
-    def __init__(self, n, maxDepth=3):
+class MinimaxPrunedPlayer(Game, Player):
+    def __init__(self, n, maxDepth=4):
         super().__init__(n)
         self.maxDepth = maxDepth-1  # 0 based
 
@@ -29,14 +29,14 @@ class MinimaxPlayer(Game, Player):
             start = time.time()
             bestMove = self.minimax(board, self.side)
             end = time.time()
-            cls()
+            # cls()
             print("Turn Time: " + str(end - start))
             return bestMove
 
     def evaluateFunction(self, board):
         return len(self.generateMoves(board, self.side))
 
-    def minimax(self, board, currentSide, depth=0):
+    def minimax(self, board, currentSide, depth=0, alpha=-np.inf, beta=np.inf):
         moves = self.generateMoves(board, currentSide)
         if depth > self.maxDepth or len(moves) == 0:
             return self.evaluateFunction(board)
@@ -45,11 +45,14 @@ class MinimaxPlayer(Game, Player):
             maxAlpha = -np.inf
             for move in moves:
                 newBoard = self.nextBoard(board, currentSide, move)
-                moveValue = self.minimax(newBoard, self.opponent(currentSide), depth + 1)
+                moveValue = self.minimax(newBoard, self.opponent(currentSide), depth + 1, alpha, beta)
+                if moveValue > beta:
+                    return moveValue
                 if moveValue > maxAlpha:
                     maxAlpha = moveValue
                     bestMove = move
-
+                    alpha = max(alpha, maxAlpha)
+            # print("Max ", depth, moveValue, maxAlpha)
             if depth == 0:
                 return bestMove
             else:
@@ -59,10 +62,13 @@ class MinimaxPlayer(Game, Player):
             minBeta = np.inf
             for move in moves:
                 newBoard = self.nextBoard(board, currentSide, move)
-                moveValue = self.minimax(newBoard, self.opponent(currentSide), depth + 1)
+                moveValue = self.minimax(newBoard, self.opponent(currentSide), depth + 1, alpha, beta)
+                if moveValue < alpha:
+                    return moveValue
                 if moveValue < minBeta:
                     minBeta = moveValue
-
+                    beta = min(beta, minBeta)
+            # print("Min ", depth, moveValue, minBeta)
             return minBeta
 
 
@@ -70,7 +76,6 @@ def cls():
     # for windows
     if name == 'nt':
         _ = system('cls')
-
         # for mac and linux(here, os.name is 'posix')
     else:
         _ = system('clear')
