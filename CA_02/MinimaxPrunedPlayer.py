@@ -7,10 +7,6 @@ import numpy as np
 
 from CA_02.Game import Game, Player
 
-SIDE_SELF = "SELF"
-SIDE_OPPONENT = "OPPONENT"
-
-
 class MinimaxPrunedPlayer(Game, Player):
     def __init__(self, n, maxDepth=4):
         super().__init__(n)
@@ -34,7 +30,7 @@ class MinimaxPrunedPlayer(Game, Player):
             return bestMove
 
     def evaluateFunction(self, board):
-        return len(self.generateMoves(board, self.side))
+        return len(self.generateMoves(board, self.side)) - len(self.generateMoves(board, self.opponent(self.side)))
 
     def minimax(self, board, currentSide, depth=0, alpha=-np.inf, beta=np.inf):
         moves = self.generateMoves(board, currentSide)
