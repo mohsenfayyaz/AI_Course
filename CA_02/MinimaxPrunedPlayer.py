@@ -30,7 +30,16 @@ class MinimaxPrunedPlayer(Game, Player):
             return bestMove
 
     def evaluateFunction(self, board):
-        return len(self.generateMoves(board, self.side)) - len(self.generateMoves(board, self.opponent(self.side)))
+        selfPieces = 0
+        opponentPieces = 0
+        for r in range(self.size):
+            for c in range(self.size):
+                if board[r][c] == self.side:
+                    selfPieces += 1
+                if board[r][c] == self.opponent(self.side):
+                    opponentPieces += 1
+        return (len(self.generateMoves(board, self.side)) + selfPieces) - \
+               (len(self.generateMoves(board, self.opponent(self.side))) + opponentPieces)
 
     def minimax(self, board, currentSide, depth=0, alpha=-np.inf, beta=np.inf):
         moves = self.generateMoves(board, currentSide)
