@@ -66,7 +66,8 @@ class Input(ValuedElement, DifferentiableElement):
         
         returns: number (float or int)
         """
-        raise NotImplementedError("Implement me!")
+        # raise NotImplementedError("Implement me!")
+        return self.get_value()  # Output of input is it's value!
 
     def dOutdX(self, elem):
         """
@@ -77,7 +78,8 @@ class Input(ValuedElement, DifferentiableElement):
 
         returns: number (float or int)
         """
-        raise NotImplementedError("Implement me!")
+        return 0  # Derivative of Input with respect to w is 0
+        # raise NotImplementedError("Implement me!")
 
 
 class Weight(ValuedElement):
@@ -184,7 +186,15 @@ class Neuron(DifferentiableElement):
 
         returns: number (float or int)
         """
-        raise NotImplementedError("Implement me!")
+        # raise NotImplementedError("Implement me!")
+        z = 0  # Sigma of inputs
+        inputs = self.get_inputs()
+        weights = self.get_weights()
+        for i in range(len(inputs)):
+            current_input = inputs[i]
+            current_weight = weights[i]
+            z += current_weight.get_value() * current_input.output()
+        return 1.0 / (1.0 + math.exp(-z))  # Sigmoid
 
     def dOutdX(self, elem):
         # Implement compute_doutdx instead!!
@@ -204,7 +214,23 @@ class Neuron(DifferentiableElement):
 
         returns: number (float/int)
         """
-        raise NotImplementedError("Implement me!")
+        # raise NotImplementedError("Implement me!")
+        out = self.output()
+        octerm = out * (1 - out)
+
+        if self.has_weight(elem):
+            index = self.my_weights.index(elem)
+            oa = self.get_inputs()[index].output()
+            d = octerm * oa
+        else:
+            d = 0
+            for i in range(len(self.get_weights())):
+                current_weight = self.my_weights[i]
+                if self.isa_descendant_weight_of(elem, current_weight):
+                    input_deriv = self.get_inputs()[i].dOutdX(elem)
+                    d += current_weight.get_value() * input_deriv
+            d *= octerm
+        return d
 
     def get_weights(self):
         return self.my_weights
@@ -241,7 +267,8 @@ class PerformanceElem(DifferentiableElement):
         
         returns: number (float/int)
         """
-        raise NotImplementedError("Implement me!")
+        # raise NotImplementedError("Implement me!")
+        return -0.5 * (self.my_desired_val - self.my_input.output()) ** 2
 
     def dOutdX(self, elem):
         """
@@ -252,7 +279,8 @@ class PerformanceElem(DifferentiableElement):
 
         returns: number (int/float)
         """
-        raise NotImplementedError("Implement me!")
+        # raise NotImplementedError("Implement me!")
+        return (self.my_desired_val - self.my_input.output()) * self.my_input.dOutdX(elem)
 
     def set_desired(self, new_desired):
         self.my_desired_val = new_desired
@@ -262,7 +290,7 @@ class PerformanceElem(DifferentiableElement):
 
 
 class Network(object):
-    def __init__(self, performance_node, neurons):
+    def __init__(self, performance_node: PerformanceElem, neurons):
         self.inputs = []
         self.weights = []
         self.performance = performance_node
@@ -354,6 +382,7 @@ def make_neural_net_basic():
     # Package all the components into a network
     # First list the PerformanceElem P, Then list all neurons afterwards
     net = Network(P, [A])
+
     return net
 
 
@@ -366,7 +395,34 @@ def make_neural_net_two_layer():
     See 'make_neural_net_basic' for required naming convention for inputs,
     weights, and neurons.
     """
-    raise NotImplementedError("Implement me!")
+    # raise NotImplementedError("Implement me!")
+    i0 = Input('i0', -1.0)  # this input is immutable
+    i1 = Input('i1', 0.0)
+    i2 = Input('i2', 0.0)
+
+    seed_random()
+    wA = Weight('wA', random_weight())
+    w1A = Weight('w1A', random_weight())
+    w1B = Weight('w1B', random_weight())
+    w2A = Weight('w2A', random_weight())
+    w2B = Weight('w2B', random_weight())
+    wB = Weight('wB', random_weight())
+
+    wAC = Weight('wAC', random_weight())
+    wBC = Weight('wBC', random_weight())
+    wC = Weight('wC', random_weight())
+
+    # Inputs must be in the same order as their associated weights
+    A = Neuron('A', [i0, i1, i2], [wA, w1A, w2A])
+    B = Neuron('B', [i0, i1, i2], [wB, w1B, w2B])
+    C = Neuron('C', [i0, A, B], [wC, wAC, wBC])
+    P = PerformanceElem(C, 0.0)
+
+    # Package all the components into a network
+    # First list the PerformanceElem P, Then list all neurons afterwards
+    net = Network(P, [A, B, C])
+
+    return net
 
 
 def make_neural_net_challenging():
@@ -391,7 +447,68 @@ def make_neural_net_two_moons():
     See 'make_neural_net_basic' for required naming convention for inputs,
     weights, and neurons.
     """
-    raise NotImplementedError("Implement me!")
+    # raise NotImplementedError("Implement me!")
+    i0 = Input('i0', -1.0)  # this input is immutable
+    i1 = Input('i1', 0.0)
+    i2 = Input('i2', 0.0)
+
+    seed_random()
+    neuron_names = ["%02d" % x for x in range(1, 41)]
+    wAxxCs = list()
+    neurons = list()
+    for name in neuron_names:
+        w1A = Weight("w1A" + name, random_weight())  # from i1
+        w2A = Weight("w2A" + name, random_weight())  # from i2
+        wA = Weight("wA" + name, random_weight())  # from i0
+        neurons.append(Neuron('A' + name, [i1, i2, i0], [w1A, w2A, wA]))
+        wAxxCs.append(Weight('wA' + name + 'C', random_weight()))
+
+    wC = Weight('wC', random_weight())
+    # Inputs must be in the same order as their associated weights
+    C = Neuron('C', [i0] + neurons, [wC] + wAxxCs)
+    P = PerformanceElem(C, 0.0)
+
+    # Package all the components into a network
+    # First list the PerformanceElem P, Then list all neurons afterwards
+    net = Network(P, neurons + [C])
+    return net
+
+
+def make_neural_net_two_moons_l2():
+    """
+    Create an overparametrized network with 40 neurons in the first layer
+    and a single neuron in the last. This network is more than enough to solve
+    the two-moons dataset, and as a result will over-fit the data if trained
+    excessively.
+
+    See 'make_neural_net_basic' for required naming convention for inputs,
+    weights, and neurons.
+    """
+    # raise NotImplementedError("Implement me!")
+    i0 = Input('i0', -1.0)  # this input is immutable
+    i1 = Input('i1', 0.0)
+    i2 = Input('i2', 0.0)
+
+    seed_random()
+    neuron_names = ["%02d" % x for x in range(1, 41)]
+    wAxxCs = list()
+    neurons = list()
+    for name in neuron_names:
+        w1A = Weight("w1A" + name, random_weight())  # from i1
+        w2A = Weight("w2A" + name, random_weight())  # from i2
+        wA = Weight("wA" + name, random_weight())  # from i0
+        neurons.append(Neuron('A' + name, [i1, i2, i0], [w1A, w2A, wA]))
+        wAxxCs.append(Weight('wA' + name + 'C', random_weight()))
+
+    wC = Weight('wC', random_weight())
+    # Inputs must be in the same order as their associated weights
+    C = Neuron('C', [i0] + neurons, [wC] + wAxxCs)
+    P = RegularizedPerformanceElem(C, 0.0) # NEW
+    # Package all the components into a network
+    # First list the PerformanceElem P, Then list all neurons afterwards
+    net = Network(P, neurons + [C])
+    P.set_weights(net.weights)  # NEW
+    return net
 
 
 def train(network,
@@ -455,7 +572,7 @@ def train(network,
                      abs_mean_performance))
 
     print('weights:', network.weights)
-    plot_decision_boundary(network, data)
+    # plot_decision_boundary(network, data)
 
 
 def test(network, data, verbose=False):
@@ -489,3 +606,130 @@ def test(network, data, verbose=False):
                                                             "wrong"))
 
     return float(correct) / len(data)
+
+
+def finite_difference(network: Network, max_abs_diff=1e-4):
+    def approx(w: Weight, f):
+        eps = 1e-8
+        network.clear_cache()
+        f_now = f()
+        w.set_value(w.get_value() + eps)
+        network.clear_cache()
+        f_eps = f()
+        # print("f", f_now, f_eps)
+        w.set_value(w.get_value() - eps)
+        return (f_eps - f_now) / eps
+
+    print("Starting finite difference test...")
+    w: Weight
+    for w in network.weights:
+        aprx = approx(w, network.performance.output)
+        print(aprx, "~", network.performance.dOutdX(w))
+        if abs(aprx - network.performance.dOutdX(w)) < max_abs_diff:
+            print(w.get_name(), "Passed")
+        else:
+            print(w.get_name(), "Failed")
+    network.clear_cache()
+
+
+import matplotlib.pyplot as plt
+
+
+def plot_decision_boundary(network: Network, xmin, xmax, ymin, ymax, data=None, title=""):
+    interval = (xmax - xmin) / 200
+    a_points = list()
+    b_points = list()
+    for x in np.arange(xmin, xmax, interval):
+        for y in np.arange(ymin, ymax, interval):
+            network.inputs[0].set_value(x)
+            network.inputs[1].set_value(y)
+            # clear cached calculations
+            network.clear_cache()
+            result = network.output.output()
+            if result > 0.5:
+                a_points.append((x, y))
+            else:
+                b_points.append((x, y))
+
+            network.clear_cache()
+
+    x = list(map(lambda x: x[0], a_points))
+    y = list(map(lambda x: x[1], a_points))
+    plt.scatter(x, y, color="lightgreen", alpha=0.1)
+    x = list(map(lambda x: x[0], b_points))
+    y = list(map(lambda x: x[1], b_points))
+    plt.scatter(x, y, color="linen", alpha=0.1)
+
+    if data is not None:
+        a_class = list()
+        b_class = list()
+        for datum in data:
+            # for i in range(len(network.inputs)):
+            #     network.inputs[i].set_value(datum[i])
+            # network.clear_cache()
+            # result = network.output.output()
+            # prediction = round(result)
+            if datum[2] == 1:
+                a_class.append((datum[0], datum[1]))
+                plt.scatter(datum[0], datum[1], color="green", alpha=1)
+            else:
+                b_class.append((datum[0], datum[1]))
+                plt.scatter(datum[0], datum[1], color="coral", alpha=1)
+
+    plt.grid(True)
+    plt.title(title)
+    plt.show()
+
+
+class RegularizedPerformanceElem(PerformanceElem):
+    """
+    Representation of a performance computing output node.
+    This element contains methods for setting the
+    desired output (d) and also computing the final
+    performance P of the network.
+
+    This implementation assumes a single output.
+    """
+
+    def __init__(self, input, desired_value):
+        assert isinstance(input, (Input, Neuron))
+        DifferentiableElement.__init__(self)
+        self.my_input = input
+        self.my_desired_val = desired_value
+        self.regularization_lambda = 0.1
+        self.weights = None
+
+    def set_weights(self, _weights):
+        self.weights = _weights
+
+    def output(self):
+        """
+        Returns the output of this PerformanceElem node.
+        returns: number (float/int)
+        """
+        # raise NotImplementedError("Implement me!")
+        old_out = -0.5 * (self.my_desired_val - self.my_input.output()) ** 2
+        return old_out - self.regularization_lambda * self.w_l2_sum()
+
+    def w_l2_sum(self):
+        l2_sum = 0
+        for w in self.weights:
+            l2_sum += w.get_value() ** 2
+        return l2_sum
+
+    def dOutdX(self, elem):
+        """
+        Returns the derivative of this PerformanceElem node with respect
+        to some weight, given by elem.
+        elem: an instance of Weight
+        returns: number (int/float)
+        """
+        # raise NotImplementedError("Implement me!")
+        old_dout = (self.my_desired_val - self.my_input.output()) * self.my_input.dOutdX(elem)
+        return old_dout - self.regularization_lambda * elem.get_value() * 2
+
+    def set_desired(self, new_desired):
+        self.my_desired_val = new_desired
+
+    def get_input(self):
+        return self.my_input
